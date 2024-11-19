@@ -101,6 +101,6 @@ router.get('/avatars', (req, res) => {
 })
 
 
-router.use("/user", userAuthMiddleware,userRouter);
+router.use("/user",userRouter);
 router.use("/space", spaceRouter);
 router.use("/admin",adminAuthMiddleware, adminRouter);
