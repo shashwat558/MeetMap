@@ -1,36 +1,36 @@
 import { Router } from "express";
 
-export const router = Router();
+export const spaceRouter = Router();
 
 
-router.post("/", (req, res) => {
-
-})
-
-router.delete("/:spaceId", (req, res) => {
+spaceRouter.post("/", (req, res) => {
 
 })
 
-router.get("/:spaceId", (req, res) => {
+spaceRouter.delete("/:spaceId", (req, res) => {
 
 })
 
-
-router.post("/element", (req, res) => {
+spaceRouter.get("/:spaceId", (req, res) => {
 
 })
 
 
-router.delete("/element", (req, res) => {
+spaceRouter.post("/element", (req, res) => {
 
 })
 
 
-router.get("/elements", (req, res) => {
+spaceRouter.delete("/element", (req, res) => {
 
 })
 
 
-router.get("/all", (req, res) => {
+spaceRouter.get("/elements", (req, res) => {
+
+})
+
+
+spaceRouter.get("/all", (req, res) => {
 
 })

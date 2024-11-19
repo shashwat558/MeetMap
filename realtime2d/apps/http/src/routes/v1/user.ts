@@ -1,11 +1,11 @@
 import { Router } from "express";
 
-export const router = Router();
+export const userRouter = Router();
 
-router.post("/metadata", (req, res) => {
+userRouter.post("/metadata", (req, res) => {
 
 })
 
-router.get("/metadata/bulk", (req, res) => {
+userRouter.get("/metadata/bulk", (req, res) => {
     
 })

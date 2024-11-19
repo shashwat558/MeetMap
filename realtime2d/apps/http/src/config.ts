@@ -1,0 +1,1 @@
+export const JWT_SECRET = "YJiSHxgngDJSfwSfCsS1Mh1dz/4yJg==";
