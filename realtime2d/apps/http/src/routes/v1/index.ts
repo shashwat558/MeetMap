@@ -7,14 +7,14 @@ const spaceRouter = require("./space")
 const adminRouter = require("./admin")
 
 
-router.get("/signup", (req, res) => {
+router.post("/signup", (req, res) => {
     res.json({
         message: "Signup"
     })
 
 })
 
-router.get("/signin", (req, res) => {
+router.post("/signin", (req, res) => {
     res.json({
         message: "Signin"
     })

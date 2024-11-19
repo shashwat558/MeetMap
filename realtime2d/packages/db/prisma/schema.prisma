@@ -18,25 +18,29 @@ model User {
   id       String  @id @unique @default(cuid())
   username String  @unique
   password String  @unique
-  avatarId String?
+  avatarId String
   role     Role
   space    Space[]
+  avatar   Avatar @relation(fields: [avatarId], references: [id])
 }
 
 model Space {
-  id        String  @id @unique @default(cuid())
-  name      String
-  width     Int
-  height    Int?
-  thumbnail String?
-  creatorId   String
-  creator    User @relation(fields: [creatorId], references: [id])
+  id          String  @id @unique @default(cuid())
+  name        String
+  width       Int
+  height      Int?
+  thumbnail   String?
+  spaceElement spaceElements[]
+  creatorId    String
+  creator     User @relation(fields: [creatorId], references: [id])
 }
 
 model spaceElements {
   id        String @id @unique @default(cuid())
   elementId String
   spaceId   String
+  space     Space @relation(fields: [spaceId], references: [id])
+  element   Element @relation(fields: [elementId], references: [id])
   x         Int
   y         Int
 }
@@ -45,6 +49,8 @@ model Element {
   id       String @id @unique @default(cuid())
   width    Int
   height   Int
+  spaces  spaceElements[]
+  mapElementsId    MapElements[]
   imageUrl String
 }
 
@@ -53,12 +59,15 @@ model Map {
   width  Int
   height Int
   name   String
+  mapElement MapElements[]
 }
 
-model mapElements {
+model MapElements {
   id        String  @id @unique @default(cuid())
   mapId     String
-  elementId String?
+  map       Map @relation(fields: [mapId], references: [id])
+  elementId String
+  element   Element @relation(fields: [elementId], references: [id])
   x         Int?
   y         Int?
 }
@@ -67,6 +76,8 @@ model Avatar {
   id       String  @id @unique @default(cuid())
   imageUrl String?
   name     String?
+  userAvatar  User[]
+  
 }
 
 enum Role {
