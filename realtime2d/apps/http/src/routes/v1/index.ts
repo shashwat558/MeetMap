@@ -1,105 +1,106 @@
-import { Router } from "express";
-import { userRouter } from "./user";
-import { spaceRouter } from "./space";
-import { adminRouter } from "./admin";
+import { json, Router } from "express";
 import { SigninSchema, SignupSchema } from "../../types";
-import {hash, compare} from "../../scrypt";
 import client from "@repo/db/client";
-import jwt from "jsonwebtoken";
+import  {userRouter} from "./user"
+import  {spaceRouter} from "./space"
+import  {adminRouter} from "./admin"
+import { hash, compare } from "../../scrypt";
+import  jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../../config";
+import { userAuthMiddleware } from "../../middleware/user";
+import { adminAuthMiddleware } from "../../middleware/admin";
+
+
+
+
 
 export const router = Router();
 
-router.post("/signup", async (req, res) => {
-    console.log("inside signup")
-    // check the user
-    const parsedData = SignupSchema.safeParse(req.body)
+router.post("/signup", async(req, res) => {
     console.log(req.body)
-    if (!parsedData.success) {
-        console.log("parsed data incorrect")
-        res.status(400).json({message: "Validation failed"})
-        return
+    const parsedUserData = SignupSchema.safeParse(req.body);
+    
+
+    if(!parsedUserData.success){
+        console.log("dgfdl")
+        console.log(req.body)
+        res.status(400).json({message: "Failed Validation"})
+        return 
+
     }
 
-    const hashedPassword = await hash(parsedData.data.password)
-
+    const hashedPassword = await hash(parsedUserData.data.password);
     try {
-         const user = await client.user.create({
-            data: {
-                username: parsedData.data.username,
+        const user = await client.user.create({
+            data:{
+                username: parsedUserData.data.username,
                 password: hashedPassword,
-                role: parsedData.data.type === "admin" ? "Admin" : "User",
+                role: parsedUserData.data.type === "admin" ? "Admin" : "User",
+                
             }
         })
         res.json({
-            userId: user.id
+           userId: user.id
+            
         })
-    } catch(e) {
-        console.log("erroer thrown")
-        console.log(e)
+
+        
+    } catch (error) {
         res.status(400).json({message: "User already exists"})
+        
     }
+
 })
 
 router.post("/signin", async (req, res) => {
-    const parsedData = SigninSchema.safeParse(req.body)
-    if (!parsedData.success) {
-        res.status(403).json({message: "Validation failed"})
-        return
+    const parsedUserData = SigninSchema.safeParse(req.body);
+    if(!parsedUserData.success){
+         res.status(400).json({message: "Validation failed"})
+         return
     }
-
     try {
-        const user = await client.user.findUnique({
-            where: {
-                username: parsedData.data.username
+        const user = await client.user.findFirst({
+            where:{
+                username: parsedUserData.data.username
             }
         })
-        
-        if (!user) {
-            res.status(403).json({message: "User not found"})
+        if(!user){
+            res.status(400).json({message:"User does not exist. please signup"})
             return
         }
-        const isValid = await compare(parsedData.data.password, user.password)
-
-        if (!isValid) {
+        //@ts-ignore
+        const isValid = await compare(parsedUserData.data.password, user.password)
+        if(!isValid){
             res.status(403).json({message: "Invalid password"})
             return
         }
-
-        const token = jwt.sign({
+        const token =  jwt.sign({
             userId: user.id,
             role: user.role
-        }, JWT_SECRET);
+        }, JWT_SECRET)
 
         res.json({
             token
         })
-    } catch(e) {
-        res.status(400).json({message: "Internal server error", e})
+
+
+
+    } catch (error) {
+        console.log(error)
     }
+
 })
 
-// router.get("/elements", async (req, res) => {
-//     const elements = await client.element.findMany()
 
-//     res.json({elements: elements.map(e => ({
-//         id: e.id,
-//         imageUrl: e.imageUrl,
-//         width: e.width,
-//         height: e.height,
-//         static: e.static
-//     }))})
-// })
+router.get('/elements', (req, res) => {
+     
+})
 
-// router.get("/avatars", async (req, res) => {
-//     const avatars = await client.avatar.findMany()
-//     res.json({avatars: avatars.map(x => ({
-//         id: x.id,
-//         imageUrl: x.imageUrl,
-//         name: x.name
-//     }))})
-// })
+router.get('/avatars', (req, res) => {
+     
+})
 
-router.use("/user", userRouter)
-router.use("/space", spaceRouter)
-router.use("/admin", adminRouter)
+
+router.use("/user", userAuthMiddleware,userRouter);
+router.use("/space", spaceRouter);
+router.use("/admin",adminAuthMiddleware, adminRouter);
