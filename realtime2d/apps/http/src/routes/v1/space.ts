@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { CreateSpaceSchema } from "../../types";
+import { AddElementSchema, CreateElementSchema, CreateSpaceSchema } from "../../types";
 import client from "@repo/db/client";
 import { map } from "zod";
 
@@ -110,7 +110,35 @@ spaceRouter.get("/:spaceId", (req, res) => {
 })
 
 
-spaceRouter.post("/element", (req, res) => {
+spaceRouter.post("/element", async (req, res) => {
+    const parsedData = AddElementSchema.safeParse(req.body);
+    if(!parsedData.success){
+        res.status(400).json({message: "Validation failed"})
+        return
+    }
+    const space = await client.space.findUnique({
+        where:{
+            id: req.body.spaceId,
+            creatorId: req.userId
+        }, select:{
+            width: true,
+            height: true
+        }
+    })
+    if(!space){
+        res.status(400).json({message: "Space not found"})
+        return
+    }
+
+    await client.spaceElements.create({
+        data:{
+            spaceId: parsedData.data.spaceId,
+            elementId: parsedData.data.elementId,
+            x: parsedData.data.x,
+            y: parsedData.data.y
+        }
+    })
+    res.status(200).json({message: "Element added"})
 
 })
 
@@ -125,6 +153,20 @@ spaceRouter.get("/elements", (req, res) => {
 })
 
 
-spaceRouter.get("/all", (req, res) => {
+spaceRouter.get("/all", async (req, res) => {
+    const spaces = await client.space.findMany({
+        where:{
+            creatorId: req.userId
+        }
+    });
+    res.json({
+        spaces: spaces.map(space => ({
+            id: space.id,
+            name: space.name,
+            thumbnail: space.thumbnail,
+            dimesions: (space.width+ "x" +space.height)
+        
+        }))
+    })
 
 })
