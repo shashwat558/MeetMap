@@ -1,5 +1,5 @@
-import { Router } from "express";
-import { AddElementSchema, CreateElementSchema, CreateSpaceSchema } from "../../types";
+import { json, Router } from "express";
+import { AddElementSchema, CreateElementSchema, CreateSpaceSchema, deleteElementSchema } from "../../types";
 import client from "@repo/db/client";
 import { map } from "zod";
 
@@ -105,7 +105,39 @@ spaceRouter.delete("/:spaceId", async (req, res) => {
 
 })
 
-spaceRouter.get("/:spaceId", (req, res) => {
+spaceRouter.get("/:spaceId", async(req, res) => {
+    const spaceId = req.params.spaceId;
+    const space = await client.space.findUnique({
+        where:{
+            id: spaceId
+        },
+        include:{
+            spaceElement: {
+                include:{
+                    element: true
+                }
+            }
+        }
+    })
+
+    if(!space){
+        res.status(400).json({message: "No space found"})
+    }
+    res.json({
+        dimension: `${space?.width}x${space?.height}`,
+        elements: space?.spaceElement.map(e => ({
+              id: e.id,
+              element: {
+                id: e.element.id,
+                imageUrl: e.element.imageUrl,
+                static: e.element.static,
+                height: e.element.height,
+                width: e.element.width
+              },
+              x: e.x,
+              y: e.y
+        }))
+    })
 
 })
 
@@ -143,8 +175,30 @@ spaceRouter.post("/element", async (req, res) => {
 })
 
 
-spaceRouter.delete("/element", (req, res) => {
+spaceRouter.delete("/element",async (req, res) => {
+    const parsedData = deleteElementSchema.safeParse(req.body);
+    if(!parsedData.success){
+        res.status(400).json({message: "validation failed"})
+        return
+    }
+    const element = await client.spaceElements.findFirst({
+        where:{
+            id: parsedData.data.elementId
+        }, include:{
+            space: true
+        }
+    })
 
+    if(!element?.space.creatorId || element.space.creatorId !== req.userId){
+        res.status(400).json({message: "Unauthorized"})
+    }
+
+    await client.spaceElements.delete({
+        where:{
+            id: parsedData.data.elementId
+        }
+    })
+    res.json({message: "Element deleted"})
 })
 
 
