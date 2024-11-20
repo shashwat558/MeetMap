@@ -75,7 +75,33 @@ spaceRouter.post("/", async (req, res) => {
     }
 })
 
-spaceRouter.delete("/:spaceId", (req, res) => {
+spaceRouter.delete("/:spaceId", async (req, res) => {
+    const spaceId = req.params.spaceId;
+
+    const space = await client.space.findUnique({
+        where:{
+            id: spaceId
+        }, select:{
+            creatorId: true
+        }
+    })
+
+    if(!space){
+        res.status(400).json({message: "Space does not exist"})
+        return 
+    }
+
+    if(space?.creatorId !== req.userId){
+        res.status(403).json({message: "unauthorized"})
+        return 
+    }
+
+    await client.space.delete({
+        where:{
+            id: spaceId
+        }
+    })
+    res.status(200).json({message: "Space deleted succesfully"})
 
 })
 
