@@ -92,15 +92,32 @@ router.post("/signin", async (req, res) => {
 })
 
 
-router.get('/elements', (req, res) => {
+router.get('/elements', async(req, res) => {
+    const elements = await client.element.findMany();
+    res.json({elements: elements.map(e => ({
+        id: e.id,
+        imageUrl: e.imageUrl,
+        height: e.height,
+        width: e.width,
+        static: e.static
+    }))});
      
 })
 
-router.get('/avatars', (req, res) => {
+router.get('/avatars', async (req, res) => {
+    const avatars = await client.avatar.findMany();
+
+    res.json({
+        avatars:avatars.map(avatar => ({
+            id: avatar.id,
+            imageUrl: avatar.imageUrl,
+            name: avatar.name
+        }))
+    })
      
 })
 
 
-router.use("/user",userRouter);
+router.use("/user",userAuthMiddleware,userRouter);
 router.use("/space", spaceRouter);
 router.use("/admin",adminAuthMiddleware, adminRouter);

@@ -57,10 +57,12 @@ adminRouter.post("/avatar", async (req, res) => {
             name: parsedData.data?.name
         }
     })
+    console.log(newAvatar.id)
     res.status(200).json({
         id: newAvatar.id
         
     })
+    
 
 });
 
