@@ -102,132 +102,140 @@ describe("Authenticate", () => {
     });
 })
 
-// describe("User metadata endpoints", () => {
-//     let token = "";
-//     let avatarId = "";
+describe("User metadata endpoints", () => {
+    let token = "";
+    let avatarId = "";
 
    
-//     beforeAll(async() => {
-        
-//         const username = shashwat + Math.random();
-//         const password = "123456";
-
-//         await axios.post(`${BACKEND_URL}/api/v1/signup`, {
-//             username, 
-//             password,
-//             type: "admin"
-//         })
-
-//         const response = await axios.post(`${BACKEND_URL}/api/v1/signin`, {
-//             username, 
-//             password
-//         })
-
-
-//         token = response.data.token
-
-//         const avatarResponse = await axios.post(`${BACKEND_URL}/api/v1/avatar`, {
-            
-//             "imageUrl": "",
-//             "name": "Timmy"
-
-//         })
-
-//         avatarId = avatarResponse.data.imageUrl;
-
-        
-
-        
-//     })
-//     test("User can update their metadata with wrong avatar id", async () => {
-//         const response = await axios.post(`${BACKEND_URL}/api/v1/user/metadata`, {
-//             avatarId: "123123123"
-
-//         },{
-//             headers:{
-//                 "authorization": `Bearer ${token}`
-//             }
-//         })
-//         expect(response.status).toBe(400)
-//     })
-
-//     test("User can update their metadata with right avatar id", async () => {
-//         const response = await axios.post(`${BACKEND_URL}/api/v1/user/metadata`, {
-//             avatarId
-
-//         },{
-//             headers: {
-//                 "authorization": `Bearer ${token}`
-//             }
-//         })
-//         expect(response.status).toBe(200)
-//     })
     
-//     test("User cannot  update their metadata if the auth header is not present", async () => {
-//         const response = await axios.post(`${BACKEND_URL}/api/v1/user/metadata`, {
-//             avatarId
-
-//         })
-//         expect(response.status).toBe(403)
-
-// })
-// })
-
-// describe("User avatar information", () => {
-//       let avatarId;
-//       let token;
-//       let userId;
-//       beforeAll(async() => {
         
-//         const username = shashwat + Math.random();
-//         const password = "123456";
+    beforeAll(async () => {
+        const username = `kirat-${Math.random()}`
+        const password = "123456"
+ 
+        await axios.post(`${BACKEND_URL}/api/v1/signup`, {
+         username,
+         password,
+         type: "admin"
+        });
+ 
+        const response = await axios.post(`${BACKEND_URL}/api/v1/signin`, {
+         username,
+         password
+        })
+ 
+        token = response.data.token
+        console.log(token)
+ 
+        const avatarResponse = await axios.post(`${BACKEND_URL}/api/v1/admin/avatar`, {
+             "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQm3RFDZM21teuCMFYx_AROjt-AzUwDBROFww&s",
+             "name": "Timmy"
+         }, {
+             headers: {
+                 authorization: `Bearer ${token}`
+             }
+         })
+         console.log("avatarresponse is " + avatarResponse.data.id)
+ 
+         avatarId = avatarResponse.data.id;
+         console.log("yaha tak sahi hai")
+ 
+     })
+    test("User cannot  update their metadata with wrong avatar id", async () => {
+        const response = await axios.post(`${BACKEND_URL}/api/v1/user/metadata`, {
+            avatarId: "123123123adsfaf"
 
-//         const signupResponse = await axios.post(`${BACKEND_URL}/api/v1/signup`, {
-//             username, 
-//             password,
-//             type: "admin"
-//         })
-//         userId = signupResponse.data.userId;
+        },{
+            headers:{
+                authorization: `Bearer ${token}`
+            }
+        })
+        expect(response.status).toBe(400)
+    })
 
-//         const response = await axios.post(`${BACKEND_URL}/api/v1/signin`, {
-//             username, 
-//             password
-//         })
+    test("User can update their metadata with right avatar id", async () => {
+        console.log("1")
+        const response = await axios.post(`${BACKEND_URL}/api/v1/user/metadata`, {
+            avatarId
+
+        },{
+            headers: {
+                authorization: `Bearer ${token}`
+            }
+        })
+        console.log("this is token", token)
+        console.log("2")
+        console.log(response.data)
+        expect(response.status).toBe(200)
+    })
+    
+    test("User cannot  update their metadata if the auth header is not present", async () => {
+        const response = await axios.post(`${BACKEND_URL}/api/v1/user/metadata`, {
+            avatarId
+
+        })
+        expect(response.status).toBe(403)
+
+})
+})
+
+describe("User avatar information", () => {
+      let avatarId;
+      let token;
+      let userId;
+      beforeAll(async() => {
+        
+        const username = "shashwat" + Math.random();
+        const password = "123456";
+
+        const signupResponse = await axios.post(`${BACKEND_URL}/api/v1/signup`, {
+            username, 
+            password,
+            type: "admin"
+        })
+        userId = signupResponse.data.userId;
+        console.log(userId + "this is userId")
+
+        const response = await axios.post(`${BACKEND_URL}/api/v1/signin`, {
+            username, 
+            password
+        })
 
 
-//         token = response.data.token
+        token = response.data.token
 
-//         const avatarResponse = await axios.post(`${BACKEND_URL}/api/v1/avatar`, {
+        const avatarResponse = await axios.post(`${BACKEND_URL}/api/v1/admin/avatar`, {
             
-//             "imageUrl": "",
-//             "name": "Timmy"
+            "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQm3RFDZM21teuCMFYx_AROjt-AzUwDBROFww&s",
+            "name": "Timmy"
 
-//         },{
-//             headers:{
-//                 authorization: `Bearer ${token}`
-//             }
-//         });
+        },{
+            headers:{
+                authorization: `Bearer ${token}`
+            }
+        });
+        avatarId = avatarResponse.data.id;
           
 
         
 
         
-//     })
+    })
 
-//     test("Get back avatar information for a user", async() => {
-//         const res = await axios.get(`${BACKEND_URL}/api/v1/user/metadata/bulk?ids=[${userId}]`);
-//         expect(res.data.avatar.length).toBe(1);
-//         expect(res.data.avatar[0].userId).toBeDefined()
-//         expect(res.data.avatar[0].userId).toBe(userId)
+    test("Get back avatar information for a user", async() => {
+        const res = await axios.get(`${BACKEND_URL}/api/v1/user/metadata/bulk?ids=[${userId}]`);
+        expect(res.data.avatars.length).toBe(1);
+        expect(res.data.avatar[0].userId).toBeDefined()
+        expect(res.data.avatar[0].userId).toBe(userId)
 
-//     })
-//     test("Availaible avatar list the recently created avatar", async () => {
-//         const response = await axios.get(`${BACKEND_URL}/api/v1/avatars`);
-//         expect(response.data.avatars.length).not.to(0);
-//         const currentAvatar = response.data.avatars.find(x => x.id == avatarId);
-//         expect(currentAvatar).toBeDefined();
-//     })
-// })
+    })
+    test("Availaible avatar list the recently created avatar", async () => {
+        const response = await axios.get(`${BACKEND_URL}/api/v1/avatars`);
+        expect(response.data.avatars.length).not.to(0);
+        const currentAvatar = response.data.avatars.find(x => x.id == avatarId);
+        expect(currentAvatar).toBeDefined();
+    })
+})
 
 // describe("Space information", () => {
 //     let mapId;
