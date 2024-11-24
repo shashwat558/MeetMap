@@ -350,7 +350,6 @@ describe("Space information", () => {
        "dimensions": "100x200",
        "mapId": mapId
     })
-    console.log(res.data)
     expect(res.spaceId).toBeDefined()
    })
    test("User is able to create a space but without mapId (empty space)", async() => {
