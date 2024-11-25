@@ -69,29 +69,39 @@ adminRouter.post("/avatar", async (req, res) => {
 
 adminRouter.post("/map", async(req, res) => {
     const parsedData = CreateMapSchema.safeParse(req.body);
+    console.log("parsedData")
     if(!parsedData.success){
+        console.log(parsedData.data)
+
         res.status(400).json({message: "Validation failed"})
         return
 
     }
-    const map = await client.map.create({
-        data:{
-            thumbnail:parsedData.data.thumbnail,
-            height: parseInt(parsedData.data.dimensions.split("x")[0]),
-            width: parseInt(parsedData.data.dimensions.split("x")[1]),
-            name: parsedData.data.name,
-            mapElement: {
-                create: parsedData.data.defaultElements.map(e => ({
-                    elementId: e.elementId,
-                    x: e.x,
-                    y: e.y
-                }))
+    try {
+        const map = await client.map.create({
+            data:{
+                thumbnail:parsedData.data.thumbnail,
+                height: parseInt(parsedData.data.dimensions.split("x")[0]),
+                width: parseInt(parsedData.data.dimensions.split("x")[1]),
+                name: parsedData.data.name,
+                mapElement: {
+                    create: parsedData.data.defaultElements.map(e => ({
+                        elementId: e.elementId,
+                        x: e.x,
+                        y: e.y
+                    }))
+                }
+    
             }
-
-        }
-
-    })
-    res.status(200).json({
-        id: map.id
-    })
+    
+        })
+        
+        console.log(map.id + "This is map ID")
+        res.status(200).json({
+            id: map.id
+        })
+    } catch (error) {
+        res.status(400).json({message: "Something happened"})
+        
+    }
 });

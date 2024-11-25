@@ -2,13 +2,16 @@ import { json, Router } from "express";
 import { AddElementSchema, CreateElementSchema, CreateSpaceSchema, deleteElementSchema } from "../../types";
 import client from "@repo/db/client";
 import { map } from "zod";
+import { userAuthMiddleware } from "../../middleware/user";
+import { adminAuthMiddleware } from "../../middleware/admin";
 
 export const spaceRouter = Router();
 
 
-spaceRouter.post("/", async (req, res) => {
+spaceRouter.post("/", userAuthMiddleware,async (req, res) => {
     const parsedData = CreateSpaceSchema.safeParse(req.body);
     if(!parsedData.success){
+        console.log("parsed dagta")
         res.status(400).json({message: "Validation failed"})
     }
     try {
@@ -21,6 +24,8 @@ spaceRouter.post("/", async (req, res) => {
                     creatorId: req.userId!
                 }
             })
+            console.log("space.id")
+            console.log(space.id)
             res.json({spaceId: space.id})
 
         }
@@ -75,8 +80,9 @@ spaceRouter.post("/", async (req, res) => {
     }
 })
 
-spaceRouter.delete("/:spaceId", async (req, res) => {
+spaceRouter.delete("/:spaceId",userAuthMiddleware, async (req, res) => {
     const spaceId = req.params.spaceId;
+    console.log(spaceId + "THis is spaceId");
 
     const space = await client.space.findUnique({
         where:{
@@ -122,9 +128,10 @@ spaceRouter.get("/:spaceId", async(req, res) => {
 
     if(!space){
         res.status(400).json({message: "No space found"})
+        return 
     }
     res.json({
-        dimension: `${space?.width}x${space?.height}`,
+        dimensions: `${space?.width}x${space?.height}`,
         elements: space?.spaceElement.map(e => ({
               id: e.id,
               element: {
@@ -191,6 +198,7 @@ spaceRouter.delete("/element",async (req, res) => {
 
     if(!element?.space.creatorId || element.space.creatorId !== req.userId){
         res.status(400).json({message: "Unauthorized"})
+        return 
     }
 
     await client.spaceElements.delete({
@@ -202,25 +210,35 @@ spaceRouter.delete("/element",async (req, res) => {
 })
 
 
-spaceRouter.get("/elements", (req, res) => {
+
+
+
+spaceRouter.get("/all", adminAuthMiddleware , async (req, res) => {
+    console.log("reached here")
+    try {
+        const spaces = await client.space.findMany({
+            where: {
+                creatorId: req.userId!
+            }
+        });
+        console.log(spaces + "these are spces")
+    
+        res.status(200).json({
+            spaces: spaces.map(s => ({
+                id: s.id,
+                name: s.name,
+                thumbnail: s.thumbnail,
+                dimensions: `${s.width}x${s.height}`,
+            }))
+        })
+    } catch (error) {
+        res.status(500).json({message: "Internal server error"})
+        return
+    }
+    
+
+    
+
 
 })
-
-
-spaceRouter.get("/all", async (req, res) => {
-    const spaces = await client.space.findMany({
-        where:{
-            creatorId: req.userId
-        }
-    });
-    res.json({
-        spaces: spaces.map(space => ({
-            id: space.id,
-            name: space.name,
-            thumbnail: space.thumbnail,
-            dimesions: (space.width+ "x" +space.height)
-        
-        }))
-    })
-
-})
+console.log("below")

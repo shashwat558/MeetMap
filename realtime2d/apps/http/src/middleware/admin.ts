@@ -5,6 +5,7 @@ import { JWT_SECRET } from "../config";
 
 
 export const adminAuthMiddleware = (req:Request, res:Response, next:NextFunction) => {
+    console.log("admin middleware hit")
     const header = req.headers["authorization"];
     const token = header?.split(" ")[1];
     if(!token){
